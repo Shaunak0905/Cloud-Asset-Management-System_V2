@@ -1,0 +1,7 @@
+# Keep LF line endings in every checkout (Prettier and the tests expect
+# them), whatever the local core.autocrlf setting.
+* text=auto eol=lf
+
+*.ico binary
+*.png binary
+*.jpg binary
