@@ -1,0 +1,329 @@
+// Nightly in-app reminders (docs/11 §24, §40, §42). Runs as a Supabase Edge
+// Function (index.ts), started once a day by Supabase Cron. It:
+//
+//   1. checks the caller knows the shared secret (REMINDERS_SECRET),
+//   2. finds ACTIVE assignments past their expected return, and assets whose
+//      warranty ends within WARRANTY_NOTICE_DAYS,
+//   3. writes notifications: the holder of an overdue asset, and every active
+//      admin for a warranty — never the same reminder twice, and no new
+//      overdue reminder while the previous one is still unread,
+//   4. deletes notifications that were read more than READ_RETENTION_DAYS ago.
+//
+// It talks to the database through the Supabase REST API with the service
+// role key, which exists only in the Edge Function's environment — never in
+// the app or the browser (docs/11 §35). No email/SMS: in-app only. (The key
+// is REMINDERS_SERVICE_KEY when set, else the SUPABASE_SERVICE_ROLE_KEY that
+// Supabase injects; see index.ts.)
+//
+// This module has no imports, so the Deno function and the Vitest tests
+// (tests/reminders.test.ts) run exactly the same code.
+
+export const CAMPUS_TIME_ZONE = "Asia/Kolkata";
+export const WARRANTY_NOTICE_DAYS = 30;
+export const READ_RETENTION_DAYS = 90;
+
+export type Env = {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  /** Shared with the cron job; requests without it are refused. */
+  secret: string;
+};
+
+export type OverdueAssignment = {
+  id: string;
+  user_id: string;
+  expected_return_at: string;
+  assets: { asset_id: string; name: string } | null;
+};
+
+export type ExpiringAsset = {
+  id: string;
+  asset_id: string;
+  name: string;
+  warranty_until: string;
+};
+
+export type NotificationRow = {
+  user_id: string;
+  type: "ASSIGNMENT_OVERDUE" | "WARRANTY_EXPIRING";
+  title: string;
+  message: string;
+  link: string;
+  dedupe_key: string;
+};
+
+export type ReminderSummary = {
+  overdue: number;
+  warranty: number;
+  created: number;
+  removed: number;
+};
+
+// --- Dates (campus time) ----------------------------------------------------
+
+/** Today's date in campus time, YYYY-MM-DD. */
+export function campusDate(now: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: CAMPUS_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+export function addDays(date: string, days: number): string {
+  const day = new Date(`${date}T00:00:00Z`);
+  day.setUTCDate(day.getUTCDate() + days);
+  return day.toISOString().slice(0, 10);
+}
+
+/** "5 Oct 2026" for a YYYY-MM-DD date or a timestamp (in campus time). */
+export function readableDate(value: string): string {
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: isDateOnly ? "UTC" : CAMPUS_TIME_ZONE,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(isDateOnly ? `${value}T00:00:00Z` : value));
+}
+
+function clip(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
+}
+
+// --- Building reminders -----------------------------------------------------
+
+export function overdueKey(assignmentId: string, today: string): string {
+  return `overdue:${assignmentId}:${today}`;
+}
+
+/** Assignment ids that still have an unread overdue reminder. */
+export function assignmentsWithUnreadReminders(keys: string[]): Set<string> {
+  return new Set(
+    keys
+      .map((key) => /^overdue:([^:]+):/.exec(key)?.[1])
+      .filter((id): id is string => id !== undefined),
+  );
+}
+
+/** One reminder per overdue assignment per day, unless one is still unread. */
+export function overdueReminders(
+  assignments: OverdueAssignment[],
+  stillUnread: Set<string>,
+  today: string,
+): NotificationRow[] {
+  return assignments
+    .filter(
+      (assignment) => assignment.assets && !stillUnread.has(assignment.id),
+    )
+    .map((assignment) => {
+      const asset = assignment.assets!;
+      return {
+        user_id: assignment.user_id,
+        type: "ASSIGNMENT_OVERDUE" as const,
+        title: clip(`Overdue: ${asset.name}`, 200),
+        message: `${asset.name} (${asset.asset_id}) was due back on ${readableDate(
+          assignment.expected_return_at,
+        )}. Please return it, or ask an admin for more time.`,
+        link: `/assets/${asset.asset_id}`,
+        dedupe_key: overdueKey(assignment.id, today),
+      };
+    });
+}
+
+/** One reminder per admin per asset and warranty date. */
+export function warrantyReminders(
+  assets: ExpiringAsset[],
+  adminIds: string[],
+  today: string,
+): NotificationRow[] {
+  return assets.flatMap((asset) => {
+    const when =
+      asset.warranty_until === today
+        ? "today"
+        : `on ${readableDate(asset.warranty_until)}`;
+    return adminIds.map((adminId) => ({
+      user_id: adminId,
+      type: "WARRANTY_EXPIRING" as const,
+      title: clip(`Warranty ending soon: ${asset.name}`, 200),
+      message: `The warranty for ${asset.name} (${asset.asset_id}) ends ${when}.`,
+      link: `/assets/${asset.asset_id}`,
+      dedupe_key: `warranty:${asset.id}:${asset.warranty_until}`,
+    }));
+  });
+}
+
+// --- Talking to the database ------------------------------------------------
+
+type Fetch = typeof fetch;
+
+function headers(env: Env, extra: Record<string, string> = {}) {
+  // A legacy service_role key is a JWT and goes in Authorization too; a new
+  // secret key (sb_secret_…) is sent as the apikey only.
+  const isJwt = env.serviceRoleKey.split(".").length === 3;
+  return {
+    apikey: env.serviceRoleKey,
+    ...(isJwt ? { Authorization: `Bearer ${env.serviceRoleKey}` } : {}),
+    "Content-Type": "application/json",
+    ...extra,
+  };
+}
+
+async function rest<T>(
+  env: Env,
+  fetchFn: Fetch,
+  path: string,
+  init: { method?: string; body?: unknown; prefer?: string } = {},
+): Promise<T> {
+  const response = await fetchFn(`${env.supabaseUrl}/rest/v1/${path}`, {
+    method: init.method ?? "GET",
+    headers: headers(env, init.prefer ? { Prefer: init.prefer } : {}),
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+  if (!response.ok) {
+    const table = path.split("?")[0];
+    throw new Error(
+      `${init.method ?? "GET"} ${table} failed (${response.status}): ${await response.text()}`,
+    );
+  }
+  return (await response.json()) as T;
+}
+
+/** Compares secrets without revealing how much of a guess was right. */
+export function sameSecret(given: string, expected: string): boolean {
+  if (given.length !== expected.length) return false;
+  let difference = 0;
+  for (let i = 0; i < given.length; i += 1) {
+    difference |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return difference === 0;
+}
+
+/** Finds what is due and writes the reminders. */
+export async function runReminders(
+  env: Env,
+  fetchFn: Fetch,
+  now: Date,
+): Promise<ReminderSummary> {
+  const today = campusDate(now);
+  const nowIso = encodeURIComponent(now.toISOString());
+
+  const [overdue, unread, expiring] = await Promise.all([
+    rest<OverdueAssignment[]>(
+      env,
+      fetchFn,
+      `asset_assignments?select=id,user_id,expected_return_at,assets(asset_id,name)&status=eq.ACTIVE&expected_return_at=lt.${nowIso}&order=expected_return_at.asc&limit=1000`,
+    ),
+    rest<Array<{ dedupe_key: string }>>(
+      env,
+      fetchFn,
+      "notifications?select=dedupe_key&type=eq.ASSIGNMENT_OVERDUE&is_read=eq.false&limit=10000",
+    ),
+    rest<ExpiringAsset[]>(
+      env,
+      fetchFn,
+      `assets?select=id,asset_id,name,warranty_until&status=neq.RETIRED&warranty_until=gte.${today}&warranty_until=lte.${addDays(today, WARRANTY_NOTICE_DAYS)}&limit=1000`,
+    ),
+  ]);
+
+  const admins =
+    expiring.length > 0
+      ? await rest<Array<{ id: string }>>(
+          env,
+          fetchFn,
+          "profiles?select=id&role=eq.ADMIN&is_active=eq.true",
+        )
+      : [];
+
+  const rows = [
+    ...overdueReminders(
+      overdue,
+      assignmentsWithUnreadReminders(unread.map((n) => n.dedupe_key)),
+      today,
+    ),
+    ...warrantyReminders(
+      expiring,
+      admins.map((admin) => admin.id),
+      today,
+    ),
+  ];
+
+  // Duplicates (same user and reminder) are skipped by the unique key, so
+  // only genuinely new reminders come back.
+  const created =
+    rows.length > 0
+      ? await rest<Array<{ id: string }>>(
+          env,
+          fetchFn,
+          "notifications?on_conflict=user_id,dedupe_key&select=id",
+          {
+            method: "POST",
+            body: rows,
+            prefer: "resolution=ignore-duplicates,return=representation",
+          },
+        )
+      : [];
+
+  const cutoff = new Date(now.getTime() - READ_RETENTION_DAYS * 86_400_000);
+  const removed = await rest<Array<{ id: string }>>(
+    env,
+    fetchFn,
+    `notifications?is_read=eq.true&read_at=lt.${encodeURIComponent(cutoff.toISOString())}&select=id`,
+    { method: "DELETE", prefer: "return=representation" },
+  );
+
+  return {
+    overdue: overdue.length,
+    warranty: expiring.length,
+    created: created.length,
+    removed: removed.length,
+  };
+}
+
+function json(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/**
+ * The Edge Function's request handler (docs/11 §42): POST only, the shared
+ * secret is required, and errors are logged but never returned in detail.
+ */
+export async function handleReminders(
+  request: Request,
+  env: Env,
+  fetchFn: Fetch = fetch,
+  now: Date = new Date(),
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return json({ error: "Method not allowed" }, 405);
+  }
+  if (!env.secret || !env.supabaseUrl || !env.serviceRoleKey) {
+    console.error("[send-reminders] missing configuration");
+    return json({ error: "Not configured" }, 500);
+  }
+  if (
+    !sameSecret(request.headers.get("x-reminders-secret") ?? "", env.secret)
+  ) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  try {
+    const summary = await runReminders(env, fetchFn, now);
+    console.log("[send-reminders]", JSON.stringify(summary));
+    return json(summary, 200);
+  } catch (error) {
+    console.error("[send-reminders] failed:", error);
+    if (String(error).includes("PGRST303")) {
+      // The REST API refused the key's JWT (e.g. "issued at future": a
+      // freshly minted key and a database clock that is slightly behind).
+      console.error(
+        "[send-reminders] the service key was refused as a JWT. Set the REMINDERS_SERVICE_KEY secret to the project's service_role key (Project Settings → API Keys).",
+      );
+    }
+    return json({ error: "Reminders failed" }, 500);
+  }
+}
