@@ -202,6 +202,7 @@ describe("database catalog", () => {
         "public.return_asset",
         "public.set_user_active",
         "public.start_maintenance",
+        "public.sustainability_dashboard",
         "public.technician_dashboard",
         "public.transfer_asset",
       ]);

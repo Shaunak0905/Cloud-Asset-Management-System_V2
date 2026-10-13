@@ -1,12 +1,14 @@
 import "server-only";
 
-import { campusMonthStart } from "@/lib/format";
+import { CAMPUS_TIME_ZONE, campusMonthStart } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
 import {
   type AdminDashboard,
   myDashboardSchema,
   parseAdminDashboard,
+  type Sustainability,
+  sustainabilitySchema,
   technicianDashboardSchema,
 } from "./schema";
 
@@ -29,6 +31,28 @@ export async function getAdminDashboard(): Promise<AdminDashboard> {
   });
   if (error) throw loadError("dashboard", error);
   return parseAdminDashboard(data);
+}
+
+/**
+ * Sustainability figures (SDG 12) for admins, or null when they cannot be
+ * loaded (e.g. the migration has not been applied yet): the section then
+ * says so instead of breaking the rest of the dashboard.
+ */
+export async function getSustainability(): Promise<Sustainability | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("sustainability_dashboard", {
+    p_time_zone: CAMPUS_TIME_ZONE,
+  });
+  if (error) {
+    loadError("sustainability figures", error);
+    return null;
+  }
+  const parsed = sustainabilitySchema.safeParse(data);
+  if (!parsed.success) {
+    console.error("[dashboard] unexpected sustainability result");
+    return null;
+  }
+  return parsed.data;
 }
 
 export async function getTechnicianDashboard() {

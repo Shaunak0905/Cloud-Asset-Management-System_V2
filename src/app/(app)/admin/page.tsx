@@ -11,6 +11,7 @@ import {
   StatGridSkeleton,
 } from "@/components/dashboard/skeletons";
 import { StatCard, StatGrid } from "@/components/dashboard/stat-card";
+import { SustainabilitySummary } from "@/components/dashboard/sustainability-summary";
 import { TechnicianWorkload } from "@/components/dashboard/technician-workload";
 import { MaintenanceTable } from "@/components/maintenance/maintenance-table";
 import { buttonClasses } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { listActiveAssignments } from "@/lib/assignments/queries";
 import { listRecentActivity } from "@/lib/audit/queries";
 import { requireRole } from "@/lib/auth/current-user";
-import { getAdminDashboard } from "@/lib/dashboard/queries";
+import { getAdminDashboard, getSustainability } from "@/lib/dashboard/queries";
 import { listMaintenanceRequests } from "@/lib/maintenance/queries";
 import { parseMaintenanceListParams } from "@/lib/maintenance/schema";
 import type { Enums } from "@/types/database";
@@ -165,6 +166,18 @@ async function Overview() {
         </StatGrid>
       </div>
 
+      <Suspense
+        fallback={
+          <StatGridSkeleton
+            count={4}
+            label="sustainability figures"
+            className="grid-cols-2 sm:grid-cols-4"
+          />
+        }
+      >
+        <Sustainability />
+      </Suspense>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Attention required">
           {attention.length === 0 ? (
@@ -233,6 +246,11 @@ async function Overview() {
       </div>
     </div>
   );
+}
+
+/** Repair, sharing and warranty figures (SDG 12); streams in separately. */
+async function Sustainability() {
+  return <SustainabilitySummary data={await getSustainability()} />;
 }
 
 async function RecentMaintenance() {

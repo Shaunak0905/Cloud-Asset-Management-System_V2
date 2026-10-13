@@ -679,6 +679,10 @@ export type Database = {
         Args: { p_request_id: string };
         Returns: undefined;
       };
+      sustainability_dashboard: {
+        Args: { p_time_zone: string };
+        Returns: Json;
+      };
       technician_dashboard: {
         Args: { p_month_start: string };
         Returns: Json;

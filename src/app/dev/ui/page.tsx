@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AuditLogTable } from "@/components/audit/audit-log-table";
 import { DistributionList } from "@/components/dashboard/distribution-list";
 import { StatCard, StatGrid } from "@/components/dashboard/stat-card";
+import { SustainabilitySummary } from "@/components/dashboard/sustainability-summary";
 import { TechnicianWorkload } from "@/components/dashboard/technician-workload";
 import { AppShell } from "@/components/layout/app-shell";
 import { MaintenanceFilters } from "@/components/maintenance/maintenance-filters";
@@ -189,6 +190,13 @@ export default async function UiGalleryPage({
             hint="Needs follow-up"
           />
         </StatGrid>
+        <SustainabilitySummary
+          data={{
+            repairs: { repaired: 18, still_damaged: 2, retired: 1 },
+            sharing: { loans: 64, assets_shared: 17 },
+            warranty: { reported_under_warranty: 6, open_under_warranty: 2 },
+          }}
+        />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card
             title="Assets by building"

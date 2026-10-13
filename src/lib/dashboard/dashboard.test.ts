@@ -5,6 +5,8 @@ import { campusMonthStart } from "@/lib/format";
 import {
   myDashboardSchema,
   parseAdminDashboard,
+  repairRate,
+  sustainabilitySchema,
   technicianDashboardSchema,
   withZeros,
 } from "./schema";
@@ -97,6 +99,28 @@ describe("campusMonthStart", () => {
     );
     expect(campusMonthStart(new Date("2026-10-31T12:00:00Z"))).toBe(
       "2026-09-30T18:30:00.000Z",
+    );
+  });
+});
+
+describe("sustainability figures", () => {
+  it("parse_the_database_result", () => {
+    const result = {
+      repairs: { repaired: 6, still_damaged: 1, retired: 1 },
+      sharing: { loans: 40, assets_shared: 12 },
+      warranty: { reported_under_warranty: 3, open_under_warranty: 1 },
+    };
+    expect(sustainabilitySchema.parse(result)).toEqual(result);
+    expect(() =>
+      sustainabilitySchema.parse({ ...result, sharing: { loans: -1 } }),
+    ).toThrow();
+  });
+
+  it("give_the_repair_rate_as_a_whole_percentage", () => {
+    expect(repairRate({ repaired: 6, still_damaged: 1, retired: 1 })).toBe(75);
+    expect(repairRate({ repaired: 2, still_damaged: 1, retired: 0 })).toBe(67);
+    expect(repairRate({ repaired: 0, still_damaged: 0, retired: 0 })).toBe(
+      null,
     );
   });
 });

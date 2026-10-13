@@ -593,6 +593,15 @@ counted. "This month" means the current campus-time calendar month.
   nothing needs attention. Also: technician workload (a guide for assigning
   work, not a score), assets by category and by building (retired excluded),
   recent maintenance and recent audit activity. Sections load independently.
+- **Sustainability** (on the admin dashboard; UN SDG 12, Responsible
+  Consumption and Production, target 12.5): how often a finished repair put
+  the asset back into service rather than leaving it damaged or retiring it,
+  how many times equipment was shared (loans, and assets used by more than
+  one person) instead of bought, problems reported while the asset was under
+  warranty, and open requests still under warranty (worth checking with the
+  supplier). Totals cover all records and come from
+  `sustainability_dashboard()`, which counts what the workflows already
+  record (repair outcomes from the audit log); nothing new is stored.
 - **Technician** (`/technician`): assigned / in progress / high-or-critical /
   resolved this month, and the top of the priority queue.
 - **Student / staff** (`/dashboard`): assets in use, overdue returns and open

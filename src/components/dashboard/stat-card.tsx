@@ -15,17 +15,20 @@ const VALUE_TONES: Record<Tone, string> = {
  * One dashboard number with what it counts (docs/12 §52: "42 Assets", not
  * "42"). Links to the matching list when there is a meaningful one
  * (docs/12 §53). `tone` highlights numbers that need attention — only when
- * they are above zero, so a calm dashboard stays calm.
+ * they are above zero, so a calm dashboard stays calm. `display` replaces
+ * the shown number when it needs formatting (e.g. "86%", or "—" for none).
  */
 export function StatCard({
   label,
   value,
+  display,
   href,
   hint,
   tone = "neutral",
 }: {
   label: string;
   value: number;
+  display?: string;
   href?: string;
   hint?: string;
   tone?: Tone;
@@ -39,7 +42,7 @@ export function StatCard({
           VALUE_TONES[value > 0 ? tone : "neutral"],
         )}
       >
-        {value}
+        {display ?? value}
       </span>
       {hint && (
         <span className="mt-0.5 block text-xs text-slate-500">{hint}</span>

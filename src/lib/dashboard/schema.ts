@@ -55,6 +55,29 @@ export const myDashboardSchema = z.object({
   open_reports: count,
 });
 
+/** sustainability_dashboard: repair, sharing and warranty counts (SDG 12). */
+export const sustainabilitySchema = z.object({
+  repairs: z.object({ repaired: count, still_damaged: count, retired: count }),
+  sharing: z.object({ loans: count, assets_shared: count }),
+  warranty: z.object({
+    reported_under_warranty: count,
+    open_under_warranty: count,
+  }),
+});
+
+export type Sustainability = z.infer<typeof sustainabilitySchema>;
+
+/**
+ * Share of finished repairs that put the asset back into service, as a
+ * whole percentage; null before any repair is finished.
+ */
+export function repairRate(repairs: Sustainability["repairs"]): number | null {
+  const finished = repairs.repaired + repairs.still_damaged + repairs.retired;
+  return finished === 0
+    ? null
+    : Math.round((repairs.repaired / finished) * 100);
+}
+
 /** Statuses with no rows are missing from a GROUP BY; they count as 0. */
 export function withZeros<K extends string>(
   counts: Partial<Record<K, number>>,

@@ -6,6 +6,7 @@ import { ActiveAssignmentsList } from "./active-assignments-list";
 import { DistributionList } from "./distribution-list";
 import { RecentActivity } from "./recent-activity";
 import { StatCard } from "./stat-card";
+import { SustainabilitySummary } from "./sustainability-summary";
 import { TechnicianWorkload } from "./technician-workload";
 
 describe("StatCard", () => {
@@ -156,5 +157,60 @@ describe("RecentActivity", () => {
       "href",
       "/maintenance/MR-2026-0017",
     );
+  });
+});
+
+describe("SustainabilitySummary", () => {
+  it("shows_the_repair_rate_sharing_and_warranty_figures", () => {
+    render(
+      <SustainabilitySummary
+        data={{
+          repairs: { repaired: 6, still_damaged: 1, retired: 1 },
+          sharing: { loans: 40, assets_shared: 1 },
+          warranty: { reported_under_warranty: 3, open_under_warranty: 2 },
+        }}
+      />,
+    );
+    expect(
+      screen.getByRole("heading", { name: "Sustainability" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/SDG 12/)).toBeInTheDocument();
+    const rate = screen.getByRole("link", {
+      name: /Repaired instead of replaced\s*75%/,
+    });
+    expect(rate).toHaveAttribute("href", "/admin/maintenance?status=RESOLVED");
+    expect(rate).toHaveTextContent(
+      "6 back in service · 1 still damaged · 1 retired",
+    );
+    const cards = within(
+      screen.getByRole("region", { name: "Sustainability" }),
+    );
+    expect(cards.getByText("40")).toBeInTheDocument();
+    expect(
+      cards.getByText("1 asset used by more than one person"),
+    ).toBeInTheDocument();
+    expect(cards.getByText("2")).toHaveClass("text-amber-700");
+  });
+
+  it("shows_a_dash_before_any_repair_is_finished", () => {
+    render(
+      <SustainabilitySummary
+        data={{
+          repairs: { repaired: 0, still_damaged: 0, retired: 0 },
+          sharing: { loans: 0, assets_shared: 0 },
+          warranty: { reported_under_warranty: 0, open_under_warranty: 0 },
+        }}
+      />,
+    );
+    expect(
+      screen.getByRole("link", { name: /Repaired instead of replaced\s*—/ }),
+    ).toHaveTextContent("No repairs finished yet");
+  });
+
+  it("says_when_the_figures_cannot_be_loaded", () => {
+    render(<SustainabilitySummary data={null} />);
+    expect(
+      screen.getByText("Sustainability figures are unavailable right now."),
+    ).toBeInTheDocument();
   });
 });

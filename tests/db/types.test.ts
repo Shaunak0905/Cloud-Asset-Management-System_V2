@@ -206,6 +206,9 @@ const TYPED_FUNCTIONS = {
   start_maintenance: {
     p_request_id: true,
   } satisfies ArgSet<"start_maintenance">,
+  sustainability_dashboard: {
+    p_time_zone: true,
+  } satisfies ArgSet<"sustainability_dashboard">,
   technician_dashboard: {
     p_month_start: true,
   } satisfies ArgSet<"technician_dashboard">,
