@@ -73,6 +73,21 @@ test.describe("public QR page", () => {
   });
 });
 
+test.describe("landing page", () => {
+  test("is_usable_on_every_screen_size_and_finds_an_asset_by_id", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await overflowsSideways(page)).toBe(false);
+    expect(await accessibilityProblems(page)).toEqual([]);
+
+    await page.getByLabel("Asset ID").fill(ASSET_ID.toLowerCase());
+    await page.getByRole("button", { name: "Inspect" }).click();
+    await expect(page).toHaveURL(`/asset/${ASSET_ID}`);
+  });
+});
+
 test.describe("signing in", () => {
   test("shows_field_errors_for_an_empty_or_invalid_form", async ({ page }) => {
     await page.goto("/login");

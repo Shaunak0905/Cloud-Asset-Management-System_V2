@@ -36,7 +36,7 @@ export function StatCard({
   const isAlert = value > 0 && tone !== "neutral";
   const content = (
     <>
-      <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <span className="block text-xs font-semibold tracking-wider text-slate-500 uppercase">
         {label}
       </span>
       <span
@@ -48,7 +48,7 @@ export function StatCard({
         {display ?? value}
       </span>
       {hint && (
-        <span className="mt-1.5 block text-xs text-slate-500 line-clamp-2">
+        <span className="mt-1.5 line-clamp-2 block text-xs text-slate-500">
           {hint}
         </span>
       )}

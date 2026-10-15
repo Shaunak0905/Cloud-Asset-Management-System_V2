@@ -4,27 +4,16 @@ import { useState } from "react";
 import { ArrowRight, QrCode, Search, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const SUGGESTIONS = [
-  { id: "DL-5440-88213", label: "Dell Laptop" },
-  { id: "EP-ABC-12345", label: "Epson Projector" },
-  { id: "HP-ED800-44120", label: "HP Desktop" },
-  { id: "ARD-UNO-0707", label: "Arduino Kit" },
-];
-
 export function AssetQuickLookup() {
   const [assetId, setAssetId] = useState("");
   const router = useRouter();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = assetId.trim();
+    // Asset IDs are generated in upper case (AST-2026-00001).
+    const trimmed = assetId.trim().toUpperCase();
     if (!trimmed) return;
     router.push(`/asset/${encodeURIComponent(trimmed)}`);
-  }
-
-  function handleQuickSelect(id: string) {
-    setAssetId(id);
-    router.push(`/asset/${encodeURIComponent(id)}`);
   }
 
   return (
@@ -40,18 +29,22 @@ export function AssetQuickLookup() {
         </span>
       </div>
 
-      <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="relative flex items-center gap-2"
+      >
         <div className="relative flex-1">
           <input
             type="text"
             value={assetId}
             onChange={(e) => setAssetId(e.target.value)}
-            placeholder="Enter public Asset ID or serial (e.g. DL-5440-88213)"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-9 pr-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:outline-hidden"
+            aria-label="Asset ID"
+            placeholder="e.g. AST-2026-00001"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pr-3 pl-9 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:outline-hidden"
           />
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
           />
         </div>
         <button
@@ -64,20 +57,9 @@ export function AssetQuickLookup() {
         </button>
       </form>
 
-      <div className="mt-3.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-        <span className="text-[11px] font-medium text-slate-400">Quick test sample:</span>
-        {SUGGESTIONS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => handleQuickSelect(item.id)}
-            className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 transition-colors hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700"
-          >
-            <span>{item.label}</span>
-            <span className="font-mono text-[10px] text-slate-400">({item.id})</span>
-          </button>
-        ))}
-      </div>
+      <p className="mt-3.5 text-[11px] text-slate-500">
+        The asset ID is printed under the QR code on the asset&apos;s label.
+      </p>
     </div>
   );
 }

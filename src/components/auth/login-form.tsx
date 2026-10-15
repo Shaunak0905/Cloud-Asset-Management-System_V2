@@ -51,7 +51,7 @@ export function LoginForm({ next }: { next?: string }) {
           />
           <Mail
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
           />
         </div>
       </Field>
@@ -69,16 +69,16 @@ export function LoginForm({ next }: { next?: string }) {
             aria-describedby={
               passwordError ? fieldErrorId("password") : undefined
             }
-            className="pl-10 pr-10 transition-colors focus:border-blue-600"
+            className="pr-10 pl-10 transition-colors focus:border-blue-600"
           />
           <Lock
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-2.5 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-blue-700"
+            className="absolute top-1/2 right-2.5 flex size-6 -translate-y-1/2 items-center justify-center rounded text-slate-400 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-blue-700"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (

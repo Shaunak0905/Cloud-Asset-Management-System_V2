@@ -39,11 +39,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         {/* Ambient background glows */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -left-20 -top-20 size-96 rounded-full bg-blue-600/20 blur-3xl"
+          className="pointer-events-none absolute -top-20 -left-20 size-96 rounded-full bg-blue-600/20 blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -bottom-20 -right-20 size-96 rounded-full bg-indigo-600/20 blur-3xl"
+          className="pointer-events-none absolute -right-20 -bottom-20 size-96 rounded-full bg-indigo-600/20 blur-3xl"
         />
         <div
           aria-hidden="true"
@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             <span className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 text-white shadow-md shadow-blue-500/20">
               <QrCode aria-hidden="true" className="size-5" />
             </span>
-            <span className="tracking-tight text-lg">Campus Assets</span>
+            <span className="text-lg tracking-tight">Campus Assets</span>
           </Link>
           <Link
             href="/"
@@ -73,14 +73,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         {/* Center Content */}
         <div className="relative z-10 my-auto max-w-lg space-y-8 py-12">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300 backdrop-blur-xs">
-            <span className="size-1.5 rounded-full bg-blue-400 animate-pulse" />
+            <span className="size-1.5 animate-pulse rounded-full bg-blue-400" />
             Cloud-Native Campus Hardware Network
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold tracking-tight text-white xl:text-4xl">
-              Digital identity for physical equipment, managed in real time.
-            </h1>
+            <h2 className="text-3xl font-bold tracking-tight text-white xl:text-4xl">
+              Digital identity for physical equipment, managed from one place.
+            </h2>
             <p className="text-base text-slate-300">
               Scan QR labels, triage repairs with photos, track asset custody,
               and maintain compliance with automated PostgreSQL Row Level
@@ -95,9 +95,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
                 <QrCode aria-hidden="true" className="size-4" />
               </span>
               <div>
-                <h2 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-white">
                   Instant QR Tagging
-                </h2>
+                </h3>
                 <p className="mt-0.5 text-xs text-slate-400">
                   Unique printable QR stickers link directly to public specs and
                   maintenance request flows.
@@ -110,12 +110,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
                 <Wrench aria-hidden="true" className="size-4" />
               </span>
               <div>
-                <h2 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-white">
                   Technician Workflows
-                </h2>
+                </h3>
                 <p className="mt-0.5 text-xs text-slate-400">
-                  Assign maintenance tickets, upload photographic resolution
-                  proof, and monitor MTTR.
+                  Assign maintenance tickets, upload photo evidence, and record
+                  every step until the repair is done.
                 </p>
               </div>
             </div>
@@ -125,9 +125,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
                 <ShieldCheck aria-hidden="true" className="size-4" />
               </span>
               <div>
-                <h2 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-white">
                   Role-Based Isolation
-                </h2>
+                </h3>
                 <p className="mt-0.5 text-xs text-slate-400">
                   Dedicated consoles for Administrators, Technicians, Staff, and
                   Students.
@@ -140,8 +140,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         {/* Footer info */}
         <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <LockKeyhole aria-hidden="true" className="size-3.5 text-blue-400" />
-            <span>Enterprise-Grade RLS Protection</span>
+            <LockKeyhole
+              aria-hidden="true"
+              className="size-3.5 text-blue-400"
+            />
+            <span>Row Level Security on every table</span>
           </div>
           <span>Next.js 16 • Supabase</span>
         </div>
@@ -154,7 +157,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <div className="mb-6 lg:hidden">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-700"
+              className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider text-blue-700 uppercase"
             >
               <ArrowLeft aria-hidden="true" className="size-3.5" />
               <span>Back to Campus Overview</span>
@@ -183,16 +186,21 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           {/* Role Access Information Pills */}
           <div className="mt-6 rounded-xl border border-slate-200/80 bg-white/70 p-4 text-xs text-slate-600 backdrop-blur-xs">
             <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-              <CheckCircle2 aria-hidden="true" className="size-3.5 text-blue-600" />
+              <CheckCircle2
+                aria-hidden="true"
+                className="size-3.5 text-blue-600"
+              />
               <span>Automated Role Routing</span>
             </div>
             <p className="mt-1 leading-relaxed text-slate-500">
               Your profile determines your workspace:{" "}
               <strong className="text-slate-700">Admin</strong> (/admin),{" "}
-              <strong className="text-slate-700">Technician</strong> (/technician), or{" "}
-              <strong className="text-slate-700">Staff/Student</strong> (/dashboard).
+              <strong className="text-slate-700">Technician</strong>{" "}
+              (/technician), or{" "}
+              <strong className="text-slate-700">Staff/Student</strong>{" "}
+              (/dashboard).
             </p>
-            <p className="mt-2 text-[11px] text-slate-400">
+            <p className="mt-2 text-[11px] text-slate-500">
               Accounts are created by the campus administrator in Supabase Auth.
             </p>
           </div>

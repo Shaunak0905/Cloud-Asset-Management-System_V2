@@ -81,7 +81,9 @@ export function ActiveAssignmentsList({
                 )}
               </p>
             </div>
-            {actions && <div className="shrink-0 pt-1 sm:pt-0">{actions(item)}</div>}
+            {actions && (
+              <div className="shrink-0 pt-1 sm:pt-0">{actions(item)}</div>
+            )}
           </li>
         );
       })}

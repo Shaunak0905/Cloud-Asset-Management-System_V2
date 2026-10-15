@@ -1,13 +1,8 @@
 import {
   ArrowRight,
   BarChart3,
-  CheckCircle2,
-  Cpu,
-  Layers,
-  Lock,
   QrCode,
   ShieldCheck,
-  Sparkles,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
@@ -67,7 +62,7 @@ export default function Home() {
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           {/* Top Live Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-blue-800 shadow-xs backdrop-blur-sm">
-            <span className="flex size-2 rounded-full bg-blue-600 animate-pulse" />
+            <span className="flex size-2 animate-pulse rounded-full bg-blue-600" />
             <span>Cloud-Native Campus Asset Management • V2</span>
             <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] text-blue-700">
               Live
@@ -84,8 +79,9 @@ export default function Home() {
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
             Give physical projectors, lab equipment, and computers a persistent
-            digital passport. Track custody, report defects with photo evidence,
-            and manage technician SLAs without paperwork.
+            digital passport. Track who is using what and where, report problems
+            in seconds, and follow every repair to resolution, without
+            paperwork.
           </p>
 
           {/* CTA Buttons */}
@@ -122,7 +118,10 @@ export default function Home() {
       </section>
 
       {/* Highlights Grid */}
-      <section id="features" className="border-t border-slate-200/80 bg-white py-20 sm:py-24">
+      <section
+        id="features"
+        className="border-t border-slate-200/80 bg-white py-20 sm:py-24"
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-xs font-bold tracking-widest text-blue-700 uppercase">
@@ -132,8 +131,8 @@ export default function Home() {
               Engineered for Real-World Campus Operations
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
-              A comprehensive toolkit covering equipment acquisition, location
-              tracking, technician dispatch, and decommission.
+              A complete toolkit covering registration, location tracking,
+              technician assignment, and retirement.
             </p>
           </div>
 
@@ -147,8 +146,9 @@ export default function Home() {
                 QR Digital Passports
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                Print scuff-resistant Q-level QR tags. Scanning opens an
-                instant public view with serial, room, department, and warranty.
+                Print scuff-resistant Q-level QR tags. Scanning opens a public
+                page with the name, status, department and home location, and
+                nothing private.
               </p>
             </div>
 
@@ -161,8 +161,9 @@ export default function Home() {
                 Rapid Problem Reporting
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                Users report issues in under 30 seconds with photos. Dispatches
-                alert technicians and track MTTR from triage to resolution.
+                Users report issues in under 30 seconds from the asset page.
+                Admins assign a technician, who logs the work with photo
+                evidence.
               </p>
             </div>
 
@@ -175,8 +176,8 @@ export default function Home() {
                 Multi-Role Governance
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                Enforced by Postgres Row Level Security. Separate workspaces
-                for Admins, Technicians, Staff, and Students.
+                Enforced by Postgres Row Level Security. Separate workspaces for
+                Admins, Technicians, Staff, and Students.
               </p>
             </div>
 
@@ -198,7 +199,10 @@ export default function Home() {
       </section>
 
       {/* How it works workflow */}
-      <section id="workflow" className="border-t border-slate-200/80 bg-slate-50/70 py-20">
+      <section
+        id="workflow"
+        className="border-t border-slate-200/80 bg-slate-50/70 py-20"
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-xs font-bold tracking-widest text-blue-700 uppercase">
@@ -218,8 +222,8 @@ export default function Home() {
                 Inventory & Tag
               </h3>
               <p className="mt-1.5 text-xs text-slate-600">
-                Administrators register new equipment, assign a building and room,
-                and print unique QR identity stickers.
+                Administrators register new equipment, assign a building and
+                room, and print unique QR identity stickers.
               </p>
             </div>
 
@@ -244,8 +248,8 @@ export default function Home() {
                 Request or Report
               </h3>
               <p className="mt-1.5 text-xs text-slate-600">
-                Borrow assets with custody verification or submit instant repair
-                tickets with camera photos.
+                Borrow assets for a chosen building and room, or report a
+                problem in a few taps.
               </p>
             </div>
 

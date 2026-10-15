@@ -9,7 +9,6 @@ import { StatCard, StatGrid } from "@/components/dashboard/stat-card";
 import { MaintenanceTable } from "@/components/maintenance/maintenance-table";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { returnAsset } from "@/lib/assignments/actions";
 import { listActiveAssignments } from "@/lib/assignments/queries";
 import { requireUser } from "@/lib/auth/current-user";
@@ -70,7 +69,8 @@ export default async function DashboardPage() {
               Welcome back, {user.fullName}
             </h1>
             <p className="mt-1 text-sm text-blue-100/90 sm:text-base">
-              Track your borrowed campus equipment, monitor return schedules, and submit maintenance tickets.
+              Track your borrowed campus equipment, monitor return schedules,
+              and submit maintenance tickets.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2.5">
@@ -132,7 +132,8 @@ export default async function DashboardPage() {
                 No active asset checkouts
               </p>
               <p className="mt-1 max-w-sm text-xs text-slate-500">
-                Scan an asset&apos;s physical QR sticker with your phone or browse available devices to request one.
+                Scan an asset&apos;s physical QR sticker with your phone or
+                browse available devices to request one.
               </p>
               <Link
                 href="/assets"
@@ -179,7 +180,8 @@ export default async function DashboardPage() {
                 No maintenance tickets filed
               </p>
               <p className="mt-1 max-w-sm text-xs text-slate-500">
-                Found a defective projector or lab equipment? Scan its QR code and click &ldquo;Report a problem&rdquo;.
+                Found a defective projector or lab equipment? Scan its QR code
+                and click &ldquo;Report a problem&rdquo;.
               </p>
               <Link
                 href="/maintenance"
