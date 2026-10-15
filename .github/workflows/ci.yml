@@ -1,0 +1,33 @@
+# Runs the same checks as `npm run check` plus a production build on every
+# push to main and every pull request, so a broken change is caught before
+# (and alongside) Vercel's deployment. Needs no secrets: the database tests
+# run on an in-process PostgreSQL, and the build works without Supabase
+# settings. The browser tests (npm run e2e) are run separately.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build

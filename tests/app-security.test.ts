@@ -3,7 +3,10 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import nextConfig, { contentSecurityPolicy } from "../next.config";
+import nextConfig, {
+  contentSecurityPolicy,
+  missingBuildSettings,
+} from "../next.config";
 
 // Security review checks for the application code (docs/04 §32–41, docs/16
 // Phase 21). RLS is the data boundary; these keep the layers in front of it
@@ -168,5 +171,26 @@ describe("security headers", () => {
     expect(contentSecurityPolicy({ supabase: null, dev: true })).toContain(
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     );
+  });
+});
+
+describe("deployment build", () => {
+  it("names_the_supabase_settings_a_vercel_build_needs", () => {
+    expect(missingBuildSettings({})).toEqual([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    ]);
+    expect(
+      missingBuildSettings({
+        NEXT_PUBLIC_SUPABASE_URL: "not a url",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "  ",
+      }),
+    ).toHaveLength(2);
+    expect(
+      missingBuildSettings({
+        NEXT_PUBLIC_SUPABASE_URL: "https://abc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "public-anon-key",
+      }),
+    ).toEqual([]);
   });
 });

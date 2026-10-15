@@ -12,8 +12,11 @@ import type { Database } from "@/types/database";
  * user. Create a new client per request — never share one across requests.
  */
 export async function createClient() {
-  const { url, anonKey } = requireSupabaseConfig();
+  // Cookies first: it marks the page as rendered per request, so a build
+  // without Supabase settings (CI, a fresh clone) does not try to prerender
+  // signed-in pages and fail on the missing configuration.
   const cookieStore = await cookies();
+  const { url, anonKey } = requireSupabaseConfig();
 
   return createServerClient<Database>(url, anonKey, {
     cookies: {

@@ -35,7 +35,7 @@ Open http://localhost:3000. If Supabase is not configured yet, the app shows a
 | ------------------------------- | ----------- | --------------------------------------------------------------------- |
 | `NEXT_PUBLIC_SUPABASE_URL`      | public      | Supabase project URL                                                  |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public      | Supabase anon / publishable key (RLS-protected)                       |
-| `NEXT_PUBLIC_APP_URL`           | public      | App origin used to build QR URLs                                      |
+| `NEXT_PUBLIC_APP_URL`           | public      | App origin for QR URLs (on Vercel: defaults to the production domain) |
 | `SUPABASE_SERVICE_ROLE_KEY`     | server only | Only if a feature genuinely requires it — never expose to the browser |
 
 Never commit `.env.local` or any real credentials.
@@ -340,6 +340,94 @@ without help (docs/14 §65–71), on a phone where it says so:
 5. As admin, find each step in the Audit log with the right person.
 6. As a student, open an `/admin` page and someone else's request by URL:
    both are refused.
+
+## Deployment (Vercel)
+
+The app runs on Vercel's free Hobby plan, built straight from this GitHub
+repository; the database, sign-in, files and the reminders job stay on
+Supabase. Every push to `main` is checked by GitHub Actions
+(`.github/workflows/ci.yml`: lint, typecheck, all tests, build) and deployed
+to production by Vercel.
+
+### 1. Before the first deployment
+
+- All migrations are applied in Supabase (the latest is
+  `20261013100000_sustainability_dashboard.sql`), and
+  `supabase/setup/security-check.sql` returns no rows.
+- An admin account exists (see Creating the first admin).
+
+### 2. Create the Vercel project (once)
+
+1. Sign in at [vercel.com](https://vercel.com) with your GitHub account,
+   choose **Add New… → Project** and import this repository.
+2. Leave the framework (Next.js) and the build, install and output settings
+   as detected.
+3. Before clicking **Deploy**, open **Environment Variables** and add, for
+   all environments (Production, Preview, Development):
+
+   | Name                            | Value                                                |
+   | ------------------------------- | ---------------------------------------------------- |
+   | `NEXT_PUBLIC_SUPABASE_URL`      | the same value as in `.env.local`                    |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | the same value as in `.env.local` (the public key)   |
+   | `NEXT_PUBLIC_APP_URL`           | optional: only for a custom domain, e.g. `https://…` |
+
+   These are baked into the build, so a Vercel build without the first two
+   stops with a message naming them. Without `NEXT_PUBLIC_APP_URL`, QR codes
+   use the project's production domain (`<project>.vercel.app`), on preview
+   deployments too. Do **not** add `SUPABASE_SERVICE_ROLE_KEY`: the app does
+   not use it.
+
+4. Click **Deploy**.
+5. **Function region:** every page reads the database, so run the server
+   code next to it. Look up the region in Supabase (**Project Settings →
+   General**, e.g. South Asia (Mumbai) `ap-south-1`), then in Vercel choose
+   the closest one under **Settings → Functions → Function Region** (e.g.
+   Mumbai `bom1`) and redeploy (**Deployments → … → Redeploy**).
+
+### 3. Supabase sign-in URLs (once)
+
+In Supabase, **Authentication → URL Configuration**:
+
+- **Site URL:** `https://<project>.vercel.app`
+- **Redirect URLs:** `https://<project>.vercel.app/**`,
+  `http://localhost:3000/**`, and for preview deployments
+  `https://*-<your-vercel-account>.vercel.app/**`
+
+Signing in happens inside the app with email and password, so these mainly
+matter for emails Supabase sends (account invitations, confirmations).
+
+### 4. Check the deployment
+
+- `https://<project>.vercel.app/api/health` answers
+  `{"status":"ok", …}`.
+- The browser tests run against it with
+  `E2E_BASE_URL=https://<project>.vercel.app npm run e2e` (the public tests
+  change nothing; the signed-in workflow writes test records, see Testing).
+- Signed in as admin, an asset's QR code points at
+  `https://<project>.vercel.app/asset/…`. Print a test label and scan it with
+  a phone before printing labels in bulk; printed QR codes depend on the
+  domain staying the same.
+- Then run the production smoke test (Phase 22).
+
+### Deploying changes, previews and rollback
+
+- **Changes:** push to `main`; CI checks it and Vercel deploys it. A failed
+  CI run shows as a red cross on the commit in GitHub.
+- **Previews:** other branches and pull requests get their own preview URL.
+  They use the same Supabase project, so anything done on a preview changes
+  real data.
+- **Rollback:** in Vercel, **Deployments**, open the last good deployment and
+  use **Instant Rollback** (or **Promote to Production**). Database migrations
+  are not rolled back with it, so keep migrations additive.
+- **Logs:** Vercel → the deployment → **Logs** for server errors; Supabase →
+  **Logs** for the database, sign-in and the reminders function.
+
+### Free-tier notes
+
+- Supabase may pause a free project after about a week without activity.
+  Open the Supabase dashboard a day before a demo and restore it if needed.
+- Vercel's Hobby plan is for personal, non-commercial projects, which suits
+  this coursework.
 
 ## UI development
 
@@ -749,6 +837,7 @@ tests/
 ├── client-bundle.test.ts # Keeps zod (and supabase-js on login) out of the browser
 └── route-protection.test.ts
 e2e/                      # Browser tests (Playwright): public pages, full workflow
+.github/workflows/ci.yml  # GitHub Actions: lint, typecheck, tests, build on every push
 ```
 
 ## Project status

@@ -52,6 +52,37 @@ export const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000" },
 ];
 
+/**
+ * The public Supabase settings missing from the build environment. They are
+ * baked into the build (and into the CSP above), so they must be set before
+ * a deployment is built, not after.
+ */
+export function missingBuildSettings(
+  env: Record<string, string | undefined> = process.env,
+): string[] {
+  const missing: string[] = [];
+  try {
+    new URL(env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+  } catch {
+    missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  }
+  if (!env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) {
+    missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+  return missing;
+}
+
+// On Vercel, fail the build rather than deploy a site nobody can sign in to.
+// Locally the app shows its setup page instead, so nothing is required.
+if (process.env.VERCEL) {
+  const missing = missingBuildSettings();
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing ${missing.join(" and ")}. Add them in Vercel → Project → Settings → Environment Variables (Production and Preview), then redeploy.`,
+    );
+  }
+}
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {

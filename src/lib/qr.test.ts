@@ -144,7 +144,20 @@ describe("getAppUrl", () => {
     "https://campus.edu/?x=1",
   ])("returns_null_for_%s", (value) => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", value);
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", undefined);
     expect(getAppUrl()).toBeNull();
+  });
+
+  it("defaults_to_the_vercel_production_domain", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "campus-assets.vercel.app");
+    expect(getAppUrl()).toBe("https://campus-assets.vercel.app");
+  });
+
+  it("prefers_the_configured_url_over_the_vercel_domain", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://assets.campus.edu");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "campus-assets.vercel.app");
+    expect(getAppUrl()).toBe("https://assets.campus.edu");
   });
 });
 

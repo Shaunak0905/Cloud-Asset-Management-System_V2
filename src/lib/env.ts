@@ -63,11 +63,17 @@ export function requireSupabaseConfig(): SupabaseConfig {
 
 /**
  * The public origin of the app (NEXT_PUBLIC_APP_URL), used to build QR and
- * share URLs, without a trailing slash. Null when unset or invalid; callers
- * must not fall back to a hard-coded domain.
+ * share URLs, without a trailing slash. On Vercel it defaults to the
+ * project's production domain (VERCEL_PROJECT_PRODUCTION_URL, set by Vercel
+ * on every deployment), so preview deployments also print QR codes that
+ * point at production. Null when unset or invalid; callers must not fall
+ * back to a hard-coded domain. Server-side only.
  */
 export function getAppUrl(): string | null {
-  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  const raw =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    (production ? `https://${production}` : "");
   if (!raw || !isHttpUrl(raw)) return null;
   const url = new URL(raw);
   if (url.search || url.hash) return null;
