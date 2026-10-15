@@ -24,12 +24,16 @@ export function SustainabilitySummary({
 
   return (
     <div>
-      <div className="mb-2">
-        <h2 className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-          <Leaf aria-hidden className="size-4 text-green-700" />
-          Sustainability
-        </h2>
-        <p className="text-xs text-slate-500">
+      <div className="mb-3">
+        <div className="flex items-center gap-2">
+          <span className="flex size-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
+            <Leaf aria-hidden className="size-3.5" />
+          </span>
+          <h2 className="text-sm font-bold tracking-tight text-slate-900">
+            Sustainability
+          </h2>
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
           UN SDG 12, responsible consumption: repairing and sharing equipment
           instead of buying new. Totals for all records.
         </p>

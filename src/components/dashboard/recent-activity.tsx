@@ -24,13 +24,16 @@ export function RecentActivity({
   }
 
   return (
-    <ul className="divide-y divide-slate-200" aria-label="Recent activity">
+    <ul className="divide-y divide-slate-100" aria-label="Recent activity">
       {rows.map((row) => {
         const reference = auditReference(row, names);
         return (
-          <li key={row.id} className="py-2.5 text-sm first:pt-0 last:pb-0">
+          <li
+            key={row.id}
+            className="rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-slate-50/70"
+          >
             <p>
-              <span className="font-medium text-slate-900">
+              <span className="font-semibold text-slate-900">
                 {row.actor?.full_name ?? "System"}
               </span>
               <span className="text-slate-600">
@@ -41,7 +44,7 @@ export function RecentActivity({
               {reference.href ? (
                 <Link
                   href={reference.href}
-                  className="font-mono text-blue-700 hover:underline"
+                  className="font-mono font-medium text-blue-700 hover:text-blue-800 hover:underline"
                 >
                   {reference.label}
                 </Link>
@@ -49,7 +52,7 @@ export function RecentActivity({
                 <span className="text-slate-700">{reference.label}</span>
               )}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500">
               <time dateTime={row.created_at}>
                 {formatDateTime(row.created_at)}
               </time>

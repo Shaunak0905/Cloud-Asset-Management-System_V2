@@ -20,26 +20,28 @@ export function Card({
   return (
     <section
       className={cn(
-        "rounded-lg border border-slate-200 bg-white shadow-xs",
+        "rounded-xl border border-slate-200/90 bg-white shadow-xs transition-shadow hover:shadow-sm",
         className,
       )}
     >
       {(title || actions) && (
-        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3.5">
           <div>
             {title && (
-              <h2 className="text-base font-semibold text-slate-900">
+              <h2 className="text-base font-semibold tracking-tight text-slate-900">
                 {title}
               </h2>
             )}
             {description && (
-              <p className="mt-0.5 text-sm text-slate-600">{description}</p>
+              <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
+                {description}
+              </p>
             )}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className="px-5 py-4">{children}</div>
+      <div className="p-5">{children}</div>
     </section>
   );
 }

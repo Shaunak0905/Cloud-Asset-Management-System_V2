@@ -45,9 +45,9 @@ export function DistributionList({
               {item.count}
             </span>
           </div>
-          <div aria-hidden className="mt-1 h-2 rounded-full bg-slate-100">
+          <div aria-hidden className="mt-1.5 h-2 rounded-full bg-slate-100">
             <div
-              className="h-2 rounded-full bg-blue-600"
+              className="h-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-300"
               style={{ width: `${(item.count / max) * 100}%` }}
             />
           </div>

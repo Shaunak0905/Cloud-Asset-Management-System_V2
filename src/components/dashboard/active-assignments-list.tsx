@@ -34,42 +34,44 @@ export function ActiveAssignmentsList({
   now?: Date;
 }) {
   return (
-    <ul className="divide-y divide-slate-200" aria-label="Assets in use">
+    <ul className="divide-y divide-slate-100" aria-label="Assets in use">
       {items.map((item) => {
         const overdue = isOverdue("ACTIVE", item.expected_return_at, now);
         return (
           <li
             key={item.id}
-            className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-2 rounded-lg px-2.5 py-3 transition-colors hover:bg-slate-50/70 sm:flex-row sm:items-center sm:justify-between"
           >
-            <div className="min-w-0">
-              {item.assets && (
-                <Link
-                  href={`/assets/${item.assets.asset_id}`}
-                  className="font-medium text-blue-700 hover:underline"
-                >
-                  {item.assets.name}
-                </Link>
-              )}
-              {showHolder && item.profiles && (
-                <span className="text-sm text-slate-600">
-                  {" · "}
-                  {item.profiles.full_name}
-                </span>
-              )}
-              <p className="flex items-center gap-1 text-sm text-slate-600">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                {item.assets && (
+                  <Link
+                    href={`/assets/${item.assets.asset_id}`}
+                    className="font-semibold text-blue-700 hover:text-blue-800 hover:underline"
+                  >
+                    {item.assets.name}
+                  </Link>
+                )}
+                {showHolder && item.profiles && (
+                  <span className="text-xs text-slate-500">
+                    {" · "}
+                    {item.profiles.full_name}
+                  </span>
+                )}
+              </div>
+              <p className="flex items-center gap-1.5 text-xs text-slate-600">
                 <MapPin
                   aria-hidden
                   className="size-3.5 shrink-0 text-slate-400"
                 />
-                {locationLabel(item.buildings, item.rooms)}
+                <span>{locationLabel(item.buildings, item.rooms)}</span>
               </p>
               <p className="text-xs text-slate-500">
                 {item.expected_return_at ? (
                   <>
                     Return by {formatDateTime(item.expected_return_at)}
                     {overdue && (
-                      <Badge tone="red" className="ml-2">
+                      <Badge tone="red" className="ml-2 font-semibold">
                         Overdue
                       </Badge>
                     )}
@@ -79,7 +81,7 @@ export function ActiveAssignmentsList({
                 )}
               </p>
             </div>
-            {actions && <div className="shrink-0">{actions(item)}</div>}
+            {actions && <div className="shrink-0 pt-1 sm:pt-0">{actions(item)}</div>}
           </li>
         );
       })}

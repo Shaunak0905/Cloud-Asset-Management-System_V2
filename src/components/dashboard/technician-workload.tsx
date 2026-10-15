@@ -31,14 +31,14 @@ export function TechnicianWorkload({ rows }: { rows: WorkloadRow[] }) {
   }
 
   return (
-    <ul className="divide-y divide-slate-200" aria-label="Technician workload">
+    <ul className="divide-y divide-slate-100" aria-label="Technician workload">
       {rows.map((row) => (
         <li
           key={row.id}
-          className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0"
+          className="flex flex-col gap-0.5 rounded-lg px-2.5 py-2 transition-colors hover:bg-slate-50/70 sm:py-2.5"
         >
-          <span className="font-medium text-slate-900">{row.name}</span>
-          <span className="flex flex-wrap gap-x-3 text-sm text-slate-600">
+          <span className="font-semibold text-slate-900">{row.name}</span>
+          <span className="flex flex-wrap gap-x-3 text-xs text-slate-500 sm:text-sm">
             <Count value={row.assigned} label="assigned" />
             <Count value={row.in_progress} label="in progress" />
             <Count

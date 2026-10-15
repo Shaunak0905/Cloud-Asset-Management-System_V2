@@ -33,36 +33,70 @@ export function StatCard({
   hint?: string;
   tone?: Tone;
 }) {
+  const isAlert = value > 0 && tone !== "neutral";
   const content = (
     <>
-      <span className="block text-sm text-slate-600">{label}</span>
+      <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+        {label}
+      </span>
       <span
         className={cn(
-          "mt-1 block text-2xl font-semibold tabular-nums",
+          "mt-2 block text-3xl font-extrabold tracking-tight tabular-nums",
           VALUE_TONES[value > 0 ? tone : "neutral"],
         )}
       >
         {display ?? value}
       </span>
       {hint && (
-        <span className="mt-0.5 block text-xs text-slate-500">{hint}</span>
+        <span className="mt-1.5 block text-xs text-slate-500 line-clamp-2">
+          {hint}
+        </span>
       )}
     </>
   );
-  const box = "block rounded-lg border border-slate-200 bg-white p-4 shadow-xs";
+
+  const box = cn(
+    "group relative block overflow-hidden rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200",
+    isAlert && tone === "danger" && "border-red-200/90 bg-red-50/20",
+    isAlert && tone === "warning" && "border-amber-200/90 bg-amber-50/20",
+  );
 
   return href ? (
     <Link
       href={href}
       className={cn(
         box,
-        "transition-colors hover:border-blue-300 hover:bg-blue-50/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700",
+        "hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700",
       )}
     >
+      <div
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-x-0 top-0 h-1 transition-colors",
+          isAlert && tone === "danger"
+            ? "bg-red-500"
+            : isAlert && tone === "warning"
+              ? "bg-amber-500"
+              : "bg-transparent group-hover:bg-blue-600",
+        )}
+      />
       {content}
     </Link>
   ) : (
-    <div className={box}>{content}</div>
+    <div className={box}>
+      <div
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-x-0 top-0 h-1",
+          isAlert && tone === "danger"
+            ? "bg-red-500"
+            : isAlert && tone === "warning"
+              ? "bg-amber-500"
+              : "bg-transparent",
+        )}
+      />
+      {content}
+    </div>
   );
 }
 
