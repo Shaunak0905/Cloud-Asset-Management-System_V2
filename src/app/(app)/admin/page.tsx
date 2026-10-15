@@ -1,10 +1,12 @@
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, Plus, Wrench } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import { ActiveAssignmentsList } from "@/components/dashboard/active-assignments-list";
+import { DashboardHero, HeroLink } from "@/components/dashboard/dashboard-hero";
 import { DistributionList } from "@/components/dashboard/distribution-list";
+import { EmptyPanel } from "@/components/dashboard/empty-panel";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import {
   CardSkeleton,
@@ -16,7 +18,6 @@ import { TechnicianWorkload } from "@/components/dashboard/technician-workload";
 import { MaintenanceTable } from "@/components/maintenance/maintenance-table";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
 import { listActiveAssignments } from "@/lib/assignments/queries";
 import { listRecentActivity } from "@/lib/audit/queries";
 import { requireRole } from "@/lib/auth/current-user";
@@ -263,7 +264,12 @@ async function RecentMaintenance() {
       actions={viewAll("/admin/maintenance", "View all")}
     >
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-600">No problems reported yet.</p>
+        <EmptyPanel
+          icon={Wrench}
+          tone="green"
+          title="No problems reported yet"
+          description="Problems people report from an asset's page or QR code will appear here."
+        />
       ) : (
         <MaintenanceTable
           rows={rows.slice(0, RECENT_COUNT)}
@@ -297,9 +303,20 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <PageHeader
-        title="Admin dashboard"
-        description={`Welcome back, ${user.fullName}.`}
+      <DashboardHero
+        workspace="Administrator Console"
+        title={`Welcome back, ${user.fullName}`}
+        description="Campus assets, maintenance and people at a glance: what needs attention, who is working on what, and where everything is."
+        actions={
+          <>
+            <HeroLink href="/admin/assets/new" icon={Plus}>
+              Add Asset
+            </HeroLink>
+            <HeroLink href="/admin/maintenance" icon={Wrench}>
+              Maintenance
+            </HeroLink>
+          </>
+        }
       />
       <Suspense
         fallback={

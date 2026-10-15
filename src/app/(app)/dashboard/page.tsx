@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 
 import { ReturnAssetButton } from "@/components/assignments/return-asset-button";
 import { ActiveAssignmentsList } from "@/components/dashboard/active-assignments-list";
+import { DashboardHero, HeroLink } from "@/components/dashboard/dashboard-hero";
+import { EmptyPanel } from "@/components/dashboard/empty-panel";
 import { StatCard, StatGrid } from "@/components/dashboard/stat-card";
 import { MaintenanceTable } from "@/components/maintenance/maintenance-table";
 import { buttonClasses } from "@/components/ui/button";
@@ -54,40 +56,16 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 p-6 text-white shadow-sm sm:p-8">
-        <div
-          aria-hidden="true"
-          className="pattern-dots pointer-events-none absolute inset-0 opacity-15"
-        />
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-blue-100 backdrop-blur-xs">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
-              <span>Campus Member Workspace</span>
-            </div>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Welcome back, {user.fullName}
-            </h1>
-            <p className="mt-1 text-sm text-blue-100/90 sm:text-base">
-              Track your borrowed campus equipment, monitor return schedules,
-              and submit maintenance tickets.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2.5">
-            <Link
-              href="/assets"
-              className={buttonClasses({
-                variant: "secondary",
-                className:
-                  "border-0 bg-white text-blue-900 shadow-sm hover:bg-blue-50",
-              })}
-            >
-              <Package aria-hidden className="size-4 text-blue-700" />
-              <span>Browse Catalog</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <DashboardHero
+        workspace="Campus Member Workspace"
+        title={`Welcome back, ${user.fullName}`}
+        description="Track your borrowed campus equipment, monitor return schedules, and submit maintenance tickets."
+        actions={
+          <HeroLink href="/assets" icon={Package}>
+            Browse Catalog
+          </HeroLink>
+        }
+      />
 
       <StatGrid label="Summary" className="mb-8 grid-cols-1 sm:grid-cols-3">
         <StatCard
@@ -124,25 +102,12 @@ export default async function DashboardPage() {
           }
         >
           {assets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <Package aria-hidden className="size-5" />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-slate-800">
-                No active asset checkouts
-              </p>
-              <p className="mt-1 max-w-sm text-xs text-slate-500">
-                Scan an asset&apos;s physical QR sticker with your phone or
-                browse available devices to request one.
-              </p>
-              <Link
-                href="/assets"
-                className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800"
-              >
-                <span>Browse equipment catalog</span>
-                <span aria-hidden>→</span>
-              </Link>
-            </div>
+            <EmptyPanel
+              icon={Package}
+              title="No active asset checkouts"
+              description="Scan an asset's physical QR sticker with your phone or browse available devices to request one."
+              link={{ href: "/assets", label: "Browse equipment catalog" }}
+            />
           ) : (
             <ActiveAssignmentsList
               items={assets}
@@ -172,25 +137,13 @@ export default async function DashboardPage() {
           }
         >
           {reports.rows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                <Package aria-hidden className="size-5" />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-slate-800">
-                No maintenance tickets filed
-              </p>
-              <p className="mt-1 max-w-sm text-xs text-slate-500">
-                Found a defective projector or lab equipment? Scan its QR code
-                and click &ldquo;Report a problem&rdquo;.
-              </p>
-              <Link
-                href="/maintenance"
-                className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800"
-              >
-                <span>View maintenance logs</span>
-                <span aria-hidden>→</span>
-              </Link>
-            </div>
+            <EmptyPanel
+              icon={Package}
+              tone="amber"
+              title="No maintenance tickets filed"
+              description="Found a defective projector or lab equipment? Scan its QR code and click “Report a problem”."
+              link={{ href: "/maintenance", label: "View maintenance logs" }}
+            />
           ) : (
             <MaintenanceTable
               rows={reports.rows.slice(0, PREVIEW)}

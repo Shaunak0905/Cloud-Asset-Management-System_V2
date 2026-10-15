@@ -1,13 +1,13 @@
-import { Wrench } from "lucide-react";
+import { ListChecks, Wrench } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { DashboardHero, HeroLink } from "@/components/dashboard/dashboard-hero";
+import { EmptyPanel } from "@/components/dashboard/empty-panel";
 import { StatCard, StatGrid } from "@/components/dashboard/stat-card";
 import { MaintenanceTable } from "@/components/maintenance/maintenance-table";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/current-user";
 import { getTechnicianDashboard } from "@/lib/dashboard/queries";
 import { listMaintenanceRequests } from "@/lib/maintenance/queries";
@@ -39,12 +39,18 @@ export default async function TechnicianDashboardPage() {
 
   return (
     <>
-      <PageHeader
-        title="Technician dashboard"
-        description={`Welcome back, ${user.fullName}.`}
+      <DashboardHero
+        workspace="Technician Workspace"
+        title={`Welcome back, ${user.fullName}`}
+        description="Your assigned repairs, most urgent first: start work, log what you find and resolve requests."
+        actions={
+          <HeroLink href={QUEUE} icon={ListChecks}>
+            Open My Queue
+          </HeroLink>
+        }
       />
 
-      <StatGrid label="Your work" className="mb-6 grid-cols-2 lg:grid-cols-4">
+      <StatGrid label="Your work" className="mb-8 grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Assigned, not started"
           value={stats.assigned}
@@ -68,32 +74,43 @@ export default async function TechnicianDashboardPage() {
         />
       </StatGrid>
 
-      {openCount === 0 ? (
-        <EmptyState
-          icon={Wrench}
-          title="No open work"
-          description="Maintenance requests assigned to you will appear here, highest priority first."
-        />
-      ) : (
-        <Card
-          title="Your queue"
-          description={`${openCount} open ${openCount === 1 ? "request" : "requests"}, most urgent first.`}
-          actions={
+      <Card
+        title="Your queue"
+        description={
+          openCount === 0
+            ? "Requests assigned to you, most urgent first."
+            : `${openCount} open ${openCount === 1 ? "request" : "requests"}, most urgent first.`
+        }
+        actions={
+          openCount > 0 ? (
             <Link
               href={QUEUE}
               className={buttonClasses({ variant: "secondary", size: "sm" })}
             >
               View all
             </Link>
-          }
-        >
+          ) : undefined
+        }
+      >
+        {openCount === 0 ? (
+          <EmptyPanel
+            icon={Wrench}
+            tone="green"
+            title="No open work"
+            description="Maintenance requests assigned to you will appear here, highest priority first."
+            link={{
+              href: `${QUEUE}?status=RESOLVED`,
+              label: "See requests you resolved",
+            }}
+          />
+        ) : (
           <MaintenanceTable
             rows={queue.rows.slice(0, QUEUE_PREVIEW)}
             caption="Most urgent maintenance requests assigned to me"
             showLocation
           />
-        </Card>
-      )}
+        )}
+      </Card>
     </>
   );
 }

@@ -2,7 +2,11 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { Package, Plus } from "lucide-react";
+
 import { ActiveAssignmentsList } from "./active-assignments-list";
+import { DashboardHero, HeroLink } from "./dashboard-hero";
+import { EmptyPanel } from "./empty-panel";
 import { DistributionList } from "./distribution-list";
 import { RecentActivity } from "./recent-activity";
 import { StatCard } from "./stat-card";
@@ -212,5 +216,52 @@ describe("SustainabilitySummary", () => {
     expect(
       screen.getByText("Sustainability figures are unavailable right now."),
     ).toBeInTheDocument();
+  });
+});
+
+describe("DashboardHero", () => {
+  it("greets_the_user_as_the_page_heading_with_its_workspace_and_actions", () => {
+    render(
+      <DashboardHero
+        workspace="Technician Workspace"
+        title="Welcome back, Ravi"
+        description="Your assigned repairs."
+        actions={
+          <HeroLink href="/admin/assets/new" icon={Plus}>
+            Add Asset
+          </HeroLink>
+        }
+      />,
+    );
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Welcome back, Ravi" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Technician Workspace")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Add Asset" })).toHaveAttribute(
+      "href",
+      "/admin/assets/new",
+    );
+  });
+});
+
+describe("EmptyPanel", () => {
+  it("explains_the_empty_section_and_where_to_go_next", () => {
+    const { rerender } = render(
+      <EmptyPanel
+        icon={Package}
+        title="No active asset checkouts"
+        description="Browse available devices to request one."
+        link={{ href: "/assets", label: "Browse equipment catalog" }}
+      />,
+    );
+    expect(screen.getByText("No active asset checkouts")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Browse equipment catalog/ }),
+    ).toHaveAttribute("href", "/assets");
+
+    rerender(
+      <EmptyPanel icon={Package} title="Nothing yet" description="Later." />,
+    );
+    expect(screen.queryByRole("link")).toBeNull();
   });
 });

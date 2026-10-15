@@ -1,3 +1,4 @@
+import { Plus, Wrench } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +7,8 @@ import { AuditLogTable } from "@/components/audit/audit-log-table";
 import { DistributionList } from "@/components/dashboard/distribution-list";
 import { StatCard, StatGrid } from "@/components/dashboard/stat-card";
 import { SustainabilitySummary } from "@/components/dashboard/sustainability-summary";
+import { DashboardHero, HeroLink } from "@/components/dashboard/dashboard-hero";
+import { EmptyPanel } from "@/components/dashboard/empty-panel";
 import { TechnicianWorkload } from "@/components/dashboard/technician-workload";
 import { AppShell } from "@/components/layout/app-shell";
 import { MaintenanceFilters } from "@/components/maintenance/maintenance-filters";
@@ -174,6 +177,33 @@ export default async function UiGalleryPage({
       </section>
 
       <section aria-label="Dashboard sample" className="mb-6 space-y-6">
+        <DashboardHero
+          workspace="Administrator Console"
+          title="Welcome back, Asha Admin"
+          description="Campus assets, maintenance and people at a glance: what needs attention, who is working on what, and where everything is."
+          actions={
+            <>
+              <HeroLink href="/dev/ui" icon={Plus}>
+                Add Asset
+              </HeroLink>
+              <HeroLink href="/dev/ui" icon={Wrench}>
+                Maintenance
+              </HeroLink>
+            </>
+          }
+        />
+        <Card
+          title="Your queue"
+          description="Requests assigned to you, most urgent first."
+        >
+          <EmptyPanel
+            icon={Wrench}
+            tone="green"
+            title="No open work"
+            description="Maintenance requests assigned to you will appear here, highest priority first."
+            link={{ href: "/dev/ui", label: "See requests you resolved" }}
+          />
+        </Card>
         <StatGrid label="Sample numbers" className="grid-cols-2 sm:grid-cols-4">
           <StatCard label="Total assets" value={142} href="/dev/ui" />
           <StatCard label="Available" value={91} href="/dev/ui" />
